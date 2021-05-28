@@ -43,8 +43,8 @@ process QualityTrim{
     file "done.txt" into ch_done
     
 
-    script:
-    """
+    shell:
+    '''
     #!/usr/bin bash
     eval "$(conda shell.bash hook)"
     conda activate metagenome  
@@ -52,5 +52,5 @@ process QualityTrim{
 
     echo "done" > done.txt
 
-    """
+    '''
 }
