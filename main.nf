@@ -29,3 +29,28 @@ if (params.help){
     helpMessage()
     exit 0 
 }
+
+process QualityTrim{
+
+    publishDir "${params.outdir}/trim_galore", mode: 'copy'
+
+    container "docker://lorentzb/trim-galore"
+
+    input:
+    path seq_dir from ch_seqs
+
+    output:
+    file "done.txt" into ch_done
+    
+
+    script:
+    """
+    #!/usr/bin bash
+    eval "$(conda shell.bash hook)"
+    conda activate metagenome  
+    trim_galore --help
+
+    echo "done" > done.txt
+
+    """
+}
