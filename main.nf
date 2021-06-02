@@ -45,7 +45,8 @@ process QualityTrim{
 
     shell:
     '''
-    #!/usr/bin bash
+    #!/usr/bin/env bash
+
     eval "$(conda shell.bash hook)"
     conda activate metagenome  
     trim_galore --help
