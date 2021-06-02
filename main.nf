@@ -51,7 +51,7 @@ process QualityTrim{
     eval "$(conda shell.bash hook)"
     conda activate metagenome  
 
-    trim_galore -q 20 --fastqc -j 8 -o clean_reads !{seq_dir}/*.fastq
+    trim_galore -q 20 --fastqc --cores 4 -o clean_reads !{seq_dir}/*.fastq
 
     echo "done" > done.txt
 
