@@ -57,3 +57,24 @@ process QualityTrim{
 
     '''
 }
+
+process multiQC{
+    publishDir "${params.outdir}/mulit_qc", mode: 'copy'
+
+    container "docker://lorentzb/multi_qc"
+
+    input:
+    path "clean_reads" from ch_cleaned
+
+    output:
+    file "multiqc_report.html" into ch_multi_qc_report
+
+    script:
+    """
+    #!/usr/bin/env bash
+
+    multiqc clean_reads/    
+    
+    """
+    
+}
