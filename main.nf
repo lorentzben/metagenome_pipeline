@@ -59,7 +59,7 @@ process QualityTrim{
 }
 
 process multiQC{
-    publishDir "${params.outdir}/mulit_qc", mode: 'copy'
+    publishDir "${params.outdir}/multi_qc", mode: 'copy'
 
     container "docker://lorentzb/multi_qc"
 
