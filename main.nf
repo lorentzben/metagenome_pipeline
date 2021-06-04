@@ -50,6 +50,7 @@ process QualityTrim{
     output:
     file "done.txt" into ch_done
     path "clean_reads" into ch_cleaned
+    path "clean_reads" into ch_cleaned_contam
     
 
     shell:
@@ -94,9 +95,11 @@ process CheckForContamination{
 
     input:
     file mapping from ch_mapping_file
+    path "clean_reads" from ch_cleaned_contam
 
     output:
     file "done.txt" into ch_contam
+    path "decontam" into ch_decontam
 
     script:
     """
@@ -104,13 +107,14 @@ process CheckForContamination{
     import subprocess
     subprocess.run(['python3 get-pip.py --user'],shell=True)
     subprocess.run(['python3 -m pip install pandas'],shell=True)
+    subprocess.run(['mkdir decontam'],shell=True)
     import pandas as pd
     samples = pd.read_csv(${mapping},sep='\t')
 
     for index, row in samples.iterrows():
         forward = row['forward-read']
         reverse = row['reverse-read']
-        command = "bowtie2 -p 4 -x genome -1 " +forward[:-6]+"_val_1.fq -2 "+reverse[:-6]+ "_val_2.fq -S "+forward[:-6]
+        command = "bowtie2 -p 4 -x genome -1 clean_reads/" +forward[:-6]+"_val_1.fq -2 clean_reads/"+reverse[:-6]+ "_val_2.fq -S decontam/"+forward[:-6]
         result = subprocess.run([command], shell=True)
     
 
