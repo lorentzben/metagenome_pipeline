@@ -94,7 +94,7 @@ process multiQC{
 }
 
 process CheckForContamination{
-    publishDir "${params.outdir}/multi_qc", mode: 'copy'
+    publishDir "${params.outdir}/decontaminate", mode: 'copy'
 
     container "docker://lorentzb/bowtie"
 
