@@ -113,7 +113,7 @@ process CheckForContamination{
         result = subprocess.run([command], shell=True)
     
 
-    echo "dont" > done.txt
+    pd.write_csv("done.txt",samples)
     
     """
 }
