@@ -106,7 +106,6 @@ process CheckForContamination{
     #!/usr/bin/env python3
     import subprocess
     subprocess.run(['mkdir decontam'],shell=True)
-    subprocess.run(['cp ${mapping} . '],shell=True)
     import pandas as pd
     samples = pd.read_csv("${mapping}",sep='\t')
 
