@@ -116,7 +116,7 @@ process CheckForContamination{
         result = subprocess.run([command], shell=True)
     
     outfile = open("done.txt","wt")
-    n = outfile.write(samples)
+    n = outfile.write(str(samples))
     outfile.close()
     
     """
