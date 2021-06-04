@@ -118,7 +118,8 @@ process CheckForContamination{
     for index, row in samples.iterrows():
         forward = row['forward-read']
         reverse = row['reverse-read']
-        command = "bowtie2 -p 4 -x Gallus_gallus/genome -1 clean_reads/" +forward[:-6]+"_val_1.fq -2 clean_reads/"+reverse[:-6]+ "_val_2.fq -S decontam/"+forward[:-6]
+        stub = row['sequence-id']
+        command = "bowtie2 -p 4 -x Gallus_gallus/genome -1 clean_reads/" +forward[:-6]+"_val_1.fq -2 clean_reads/"+reverse[:-6]+ "_val_2.fq -S decontam/"+stub+".sam"
         result = subprocess.run([command], shell=True)
     
     outfile = open("done.txt","wt")
