@@ -91,7 +91,7 @@ process multiQC{
 process CheckForContamination{
     publishDir "${params.outdir}/multi_qc", mode: 'copy'
 
-    container "docker://quay.io/biocontainers/bowtie2:2.4.4--py38h72fc82f_0"
+    container "docker://lorentzb/bowtie"
 
     input:
     file mapping from ch_mapping_file
