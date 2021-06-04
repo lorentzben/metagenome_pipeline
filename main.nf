@@ -11,6 +11,7 @@ def helpMessage(){
 
     Main arguments:
         --input [path/to/folder]      Folder containing reads from this analysis
+        --mapping [file]              Mapping file with, sample-id \t forward-read \t reverse-read
         --outdir [file]               The output directory where the results will be saved 
 
     """.stripIndent()
@@ -22,6 +23,13 @@ if(params.input){
         .fromPath(params.input)
         .ifEmpty {exit 1, log.info "Cannot find path file ${input}"}
         .set{ ch_seqs }
+}
+
+if(params.mapping){
+    Channel
+        .fromPath(params.mapping)
+        .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
+        .set{ ch_mapping_file }
 }
 
 //show help message 
@@ -51,7 +59,7 @@ process QualityTrim{
     eval "$(conda shell.bash hook)"
     conda activate metagenome  
 
-    trim_galore -q 20 --fastqc --cores 4 -o clean_reads !{seq_dir}/*.fastq
+    trim_galore -q 20 --fastqc --paired --cores 4 -o clean_reads !{seq_dir}/*.fastq
 
     echo "done" > done.txt
 
@@ -77,4 +85,32 @@ process multiQC{
     
     """
     
+}
+
+process CheckForContamination{
+    publishDir "${params.outdir}/multi_qc", mode: 'copy'
+
+    container "docker://quay.io/biocontainers/bowtie2:2.4.4--py38h72fc82f_0"
+
+    input:
+    file mapping from ch_mapping_file
+
+    output:
+    file "multiqc_report.html" into ch_multi_qc_report
+
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    subprocess.run(['python3 -m pip install pandas'],shell=True)
+    import pandas as pd
+    samples = pd.read_csv(${mapping},sep='\t')
+
+    for index, row in samples.iterrows():
+        forward = row['forward-read']
+        reverse = row['reverse-read']
+        command = "bowtie2 -p 4 -x genome -1 " +forward[:-6]+"_val_1.fq -2 "+reverse[:-6]+ "_val_2.fq -S "+forward[:-6]
+        result = subprocess.run([command], shell=True)
+    
+    """
 }
