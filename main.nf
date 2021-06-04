@@ -105,7 +105,9 @@ process CheckForContamination{
     """
     #!/usr/bin/env python3
     import subprocess
+    import time
     subprocess.run(['python3 -m pip install pandas --user'],shell=True)
+    time.sleep(2)
     subprocess.run(['mkdir decontam'],shell=True)
     import pandas as pd
     samples = pd.read_csv(${mapping},sep='\t')
