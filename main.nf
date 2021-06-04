@@ -32,6 +32,11 @@ if(params.mapping){
         .set{ ch_mapping_file }
 }
 
+Channel
+    .fromPath("${baseDir}/Gallus_gallus")
+    .ifEmpty{ exit 1, log.info "Cannot find ref database, please collect"}
+    .set{ ch_chicken_ref }
+
 //show help message 
 if (params.help){
     helpMessage()
@@ -96,6 +101,7 @@ process CheckForContamination{
     input:
     file mapping from ch_mapping_file
     path "clean_reads" from ch_cleaned_contam
+    path "Gallus_gallus" from ch_chicken_ref
 
     output:
     file "done.txt" into ch_contam
@@ -112,7 +118,7 @@ process CheckForContamination{
     for index, row in samples.iterrows():
         forward = row['forward-read']
         reverse = row['reverse-read']
-        command = "bowtie2 -p 4 -x genome -1 clean_reads/" +forward[:-6]+"_val_1.fq -2 clean_reads/"+reverse[:-6]+ "_val_2.fq -S decontam/"+forward[:-6]
+        command = "bowtie2 -p 4 -x Gallus_gallus/genome -1 clean_reads/" +forward[:-6]+"_val_1.fq -2 clean_reads/"+reverse[:-6]+ "_val_2.fq -S decontam/"+forward[:-6]
         result = subprocess.run([command], shell=True)
     
     outfile = open("done.txt","wt")
