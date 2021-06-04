@@ -94,7 +94,7 @@ process CheckForContamination{
     container "docker://lorentzb/bowtie"
 
     input:
-    file "mapping.tsv" from ch_mapping_file
+    file mapping from ch_mapping_file
     path "clean_reads" from ch_cleaned_contam
 
     output:
@@ -110,7 +110,7 @@ process CheckForContamination{
     time.sleep(5)
     subprocess.run(['mkdir decontam'],shell=True)
     import pandas as pd
-    samples = pd.read_table('mapping.tsv',index_col=0,sep='\t+', engine='python')
+    samples = pd.read_csv('mapping.tsv',sep='\t')
 
     for index, row in samples.iterrows():
         forward = row['forward-read']
