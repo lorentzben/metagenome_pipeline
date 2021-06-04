@@ -106,13 +106,15 @@ process CheckForContamination{
     #!/usr/bin/env python3
     import subprocess
     import time
+    import os
     subprocess.run(['python3 -m pip install pandas --user'],shell=True)
     time.sleep(5)
     subprocess.run(['mkdir decontam'],shell=True)
+    local = os.getcwd()
     subprocess.run(['ls'],shell=True)
     subprocess.run(['pwd'],shell=True)
     import pandas as pd
-    samples = pd.read_table(\'${mapping}',index_col=0,sep='\t+', engine='python')
+    samples = pd.read_table(local + \'/${mapping}',index_col=0,sep='\t+', engine='python')
 
     for index, row in samples.iterrows():
         forward = row['forward-read']
