@@ -107,7 +107,7 @@ process CheckForContamination{
     import subprocess
     subprocess.run(['mkdir decontam'],shell=True)
     import pandas as pd
-    samples = pd.read_csv(\'${mapping}',sep='\t')
+    samples = pd.read_csv(\'${mapping}',sep='\\t')
 
     for index, row in samples.iterrows():
         forward = row['forward-read']
