@@ -115,8 +115,9 @@ process CheckForContamination{
         command = "bowtie2 -p 4 -x genome -1 clean_reads/" +forward[:-6]+"_val_1.fq -2 clean_reads/"+reverse[:-6]+ "_val_2.fq -S decontam/"+forward[:-6]
         result = subprocess.run([command], shell=True)
     
-
-    pd.write_csv("done.txt",samples)
+    outfile = open("done.txt","wt")
+    n = outfile.write(samples)
+    outfile.close()
     
     """
 }
