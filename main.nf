@@ -96,7 +96,7 @@ process CheckForContamination{
     file mapping from ch_mapping_file
 
     output:
-    file "multiqc_report.html" into ch_multi_qc_report
+    file "done.txt" into ch_contam
 
     script:
     """
@@ -111,6 +111,9 @@ process CheckForContamination{
         reverse = row['reverse-read']
         command = "bowtie2 -p 4 -x genome -1 " +forward[:-6]+"_val_1.fq -2 "+reverse[:-6]+ "_val_2.fq -S "+forward[:-6]
         result = subprocess.run([command], shell=True)
+    
+
+    echo "dont" > done.txt
     
     """
 }
