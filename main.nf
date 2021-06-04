@@ -109,6 +109,8 @@ process CheckForContamination{
     subprocess.run(['python3 -m pip install pandas --user'],shell=True)
     time.sleep(5)
     subprocess.run(['mkdir decontam'],shell=True)
+    subprocess.run(['ls'],shell=True)
+    subprocess.run(['pwd'],shell=True)
     import pandas as pd
     samples = pd.read_table(\'${mapping}',index_col=0,sep='\t+', engine='python')
 
