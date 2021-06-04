@@ -7,7 +7,8 @@ def helpMessage(){
     This script should be called as follows:
     srun --pty  -p inter_p  --mem=40G --nodes=2 --ntasks-per-node=8 --time=12:00:00 --job-name=qlogin /bin/bash -l
     TODO update this command 
-    nextflow run main.nf 
+    nextflow run main.nf --input seqs --mapping mapping.tsv --outdir paired 
+    This program expects paired end reads, a single end read pipeline can be developed if required. 
 
     Main arguments:
         --input [path/to/folder]      Folder containing reads from this analysis
@@ -29,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .set{ ch_mapping_file }
+        .into{ ch_mapping_file, ch_mapping_file_sam }
 }
 
 Channel
@@ -126,5 +127,46 @@ process CheckForContamination{
     n = outfile.write(str(samples))
     outfile.close()
     
+    """
+}
+
+process ConvertSamtoBamandModify{
+    publishDir "${params.outdir}/decontaminate", mode: 'copy'
+
+    container "docker://"
+
+    input:
+    file mapping from ch_mapping_file_sam
+    path "decontam" from ch_decontam
+    
+    output:
+    path "no_host" into ch_no_host_seqs
+
+    script:
+    """
+    #!/usr/bin/env python3
+    import glob
+    import subprocess
+
+    sample_list = glob.glob('./decontam/*.sam')
+    subprocess.run(['mkdir no_host'],shell=True)
+
+    for sample in sample_list:
+        sample = sample.split('/')[2]
+        #convert sam to bam 
+        sam_conv = 'samtools view -bS decontam/'+sample+' > '+sample[:-4]+'.bam'
+        subprocess.run([sam_conv], shell=True)
+
+        #filter the unmapped reads
+        filter_command = 'samtools view -b -f 12 -F 256 '+sample[:-4]+'.bam > '+sample[:-4]+'_bothUnmapped.bam'
+        subprocess.run([filter_command],shell=True)
+
+        #split reads into fastq files
+        sort_command = 'samtools sort -n -m 5G -@ 2 '+sample[:-4]+'_bothUnmapped.bam -o '+sample[:-4]+'_sorted.bam'
+        subprocess.run([sort_command], shell=True)
+        split_command = 'samtools fastq -@ 8 '+sample[:-4]+'_sorted.bam -1 no_host/'+sample[:-4]+'_R1.fastq.gz -2 no_host/'+sample[:-4]+'_R2.fastq.gz -0 /dev/null -s /dev/null -n'
+        subprocess.run([split_command],shell=True)
+
+
     """
 }
