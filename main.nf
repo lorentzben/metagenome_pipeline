@@ -129,7 +129,7 @@ process CheckForContamination{
 process ConvertSamtoBamandModify{
     publishDir "${params.outdir}/decontaminate", mode: 'copy'
 
-    container "docker://"
+    container "docker://lorentzb/samtools"
 
     input:
     file mapping from ch_mapping_file_sam
