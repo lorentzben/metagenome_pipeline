@@ -105,7 +105,6 @@ process CheckForContamination{
     path "Gallus_gallus" from ch_chicken_ref
 
     output:
-    file "done.txt" into ch_contam
     path "decontam" into ch_decontam
 
     script:
@@ -123,10 +122,7 @@ process CheckForContamination{
         command = "bowtie2 -p 4 -x Gallus_gallus/genome -1 clean_reads/" +forward[:-6]+"_val_1.fq -2 clean_reads/"+reverse[:-6]+ "_val_2.fq -S decontam/"+stub+".sam"
         result = subprocess.run([command], shell=True)
     
-    outfile = open("done.txt","wt")
-    n = outfile.write(str(samples))
-    outfile.close()
-    
+  
     """
 }
 
