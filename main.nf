@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file, ch_mapping_file_sam }
+        .into{ ch_mapping_file ; ch_mapping_file_sam }
 }
 
 Channel
