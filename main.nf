@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam }
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly }
 }
 
 Channel
@@ -162,7 +162,36 @@ process ConvertSamtoBamandModify{
         subprocess.run([sort_command], shell=True)
         split_command = 'samtools fastq -@ 8 '+sample[:-4]+'_sorted.bam -1 no_host/'+sample[:-4]+'_R1.fastq.gz -2 no_host/'+sample[:-4]+'_R2.fastq.gz -0 /dev/null -s /dev/null -n'
         subprocess.run([split_command],shell=True)
+    """
+}
 
+process RoundOneAssemble{
 
+    publishDir "${params.outdir}/initial_assembly", mode: 'copy'
+
+    container "docker://lorentzb/megahit"
+
+    input:
+    file mapping from ch_mapping_file_assembly
+    path "no_host" from ch_no_host_seqs
+    
+    output:
+    path "first_contigs" into ch_first_contigs
+    path "first_contigs" into ch_remapping
+     
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
+    subprocess.run([mkdir first_contigs], shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+    
+        megahit_command = "megahit -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz --presets meta-large -o first_contigs/"+stub+"_assembly"
+        subprocess([megahit_command],shell=True)
     """
 }
