@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly }
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_file_assembly_two}
 }
 
 Channel
@@ -235,5 +235,36 @@ process PullUnmappedOut{
         subprocess.run([sort_command], shell=True)
         split_command = 'samtools fastq -@ 8 '+stub+'_sorted.bam -1 no_host/'+stub+'_R1.fastq.gz -2 no_host/'+stub+'_R2.fastq.gz -0 /dev/null -s /dev/null -n'
         subprocess.run([split_command],shell=True)
+    """
+}
+
+process RoundTwoAssembly{
+
+    publishDir "${params.outdir}/second_assembly", mode: 'copy'
+
+    container "docker://lorentzb/megahit"
+
+    input:
+    file mapping from ch_mapping_file_assembly_two
+    path "round_two_reads" from ch_reads_to_be_reassembled
+    
+    output:
+    path "second_contigs" into ch_second_contigs
+    
+    
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
+    subprocess.run([mkdir second_contigs], shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+    
+        megahit_command = "megahit -1 round_two_reads/"+stub+"_R1.fastq.gz -2 round_two_reads/"+stub+"_R2.fastq.gz --presets meta-large -o second_contigs/"+stub+"_assembly"
+        subprocess([megahit_command],shell=True)
     """
 }
