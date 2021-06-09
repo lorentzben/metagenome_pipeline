@@ -186,7 +186,7 @@ process RoundOneAssemble{
     import pandas as pd
 
     samples = pd.read_csv("${mapping}",sep='\t')
-    subprocess.run([mkdir first_contigs], shell=True)
+    subprocess.run(['mkdir first_contigs'], shell=True)
 
     for index, row in samples.iterrows():
         stub = row['sequence-id']
@@ -259,7 +259,7 @@ process RoundTwoAssembly{
     import pandas as pd
 
     samples = pd.read_csv("${mapping}",sep='\t')
-    subprocess.run([mkdir second_contigs], shell=True)
+    subprocess.run(['mkdir second_contigs'], shell=True)
 
     for index, row in samples.iterrows():
         stub = row['sequence-id']
