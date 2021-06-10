@@ -4,7 +4,7 @@
 #SBATCH --job-name=Metagenomic_Pipeline
 #SBATCH --nodes=4
 #SBATCH --ntasks=16
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mem=64gb
 
 #Replace this with your UGA email to get notified on completion
