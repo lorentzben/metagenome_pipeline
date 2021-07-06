@@ -137,6 +137,7 @@ process ConvertSamtoBamandModify{
     
     output:
     path "no_host" into ch_no_host_seqs
+    path "no_host" into ch_no_host_mapping
 
     script:
     """
@@ -196,6 +197,39 @@ process RoundOneAssemble{
     """
 }
 
+process FindUnmappedReads{
+    publishDir "${params.outdir}/unmapped_reads", mode: 'copy'
+
+    container "docker://lorentzb/bowtie"
+
+    input:
+    file mapping from ch_mapping_coverage
+    path "first_contigs" from ch_remapping
+    path "no_host" from ch_no_host_mapping
+    
+    output:
+    path "sams" into ch_sams_to_be_separated
+     
+
+    script:
+    """
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
+    subprocess.run([mkdir sams], shell=True)
+
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        build_index = "bowtie2-build first_contigs/"+stub+"_assembly/final.contigs.fa final.contigs"
+        subprocess.run(['build_index'], shell=True)
+
+        map_reads = "bowtie2 -x final.contigs -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz -S sams/"+stub+".sam" 
+    """
+}
+
 process PullUnmappedOut{
 
     publishDir "${params.outdir}/unmapped_reads", mode: 'copy'
@@ -205,6 +239,7 @@ process PullUnmappedOut{
     input:
     path "first_contigs" from ch_remapping
     file mapping from ch_mapping_remapping
+    path "sams" from ch_sams_to_be_separated
     
     output:
     path "round_two_reads" into ch_reads_to_be_reassembled
