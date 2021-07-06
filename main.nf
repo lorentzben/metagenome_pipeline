@@ -258,7 +258,7 @@ process RoundTwoAssembly{
     import subprocess
     import pandas as pd
 
-    samples = pd.read_csv("${mapping}",sep='\t')
+    samples = pd.read_csv('${mapping}',sep='\t')
     subprocess.run(['mkdir second_contigs'], shell=True)
 
     for index, row in samples.iterrows():
