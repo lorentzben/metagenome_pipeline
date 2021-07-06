@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_file_assembly_two}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_remapping ; ch_mapping_file_assembly_two}
 }
 
 Channel
@@ -204,6 +204,7 @@ process PullUnmappedOut{
 
     input:
     path "first_contigs" from ch_remapping
+    file mapping from ch_mapping_remapping
     
     output:
     path "round_two_reads" into ch_reads_to_be_reassembled
