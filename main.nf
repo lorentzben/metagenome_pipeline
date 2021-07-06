@@ -179,6 +179,7 @@ process RoundOneAssemble{
     output:
     path "first_contigs" into ch_first_contigs
     path "first_contigs" into ch_remapping
+    path "first_contigs" into ch_remapping_pull
      
     script:
     """
@@ -237,7 +238,7 @@ process PullUnmappedOut{
     container "docker://lorentzb/samtools"
 
     input:
-    path "first_contigs" from ch_remapping
+    path "first_contigs" from ch_remapping_pull
     file mapping from ch_mapping_remapping
     path "sams" from ch_sams_to_be_separated
     
