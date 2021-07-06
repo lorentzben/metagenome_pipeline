@@ -266,6 +266,6 @@ process RoundTwoAssembly{
         stub = row['sequence-id']
     
         megahit_command = "megahit -1 round_two_reads/"+stub+"_R1.fastq.gz -2 round_two_reads/"+stub+"_R2.fastq.gz --presets meta-large -o second_contigs/"+stub+"_assembly"
-        subprocess([megahit_command],shell=True)
+        subprocess(['megahit_command'],shell=True)
     """
 }
