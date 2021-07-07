@@ -193,7 +193,7 @@ process RoundOneAssemble{
         stub = row['sequence-id']
     
         megahit_command = "megahit -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz --presets meta-large -o first_contigs/"+stub+"_assembly"
-        subprocess.run([megahit_command],shell=True)
+        subprocess.run(['megahit_command'],shell=True)
     """
 }
 
