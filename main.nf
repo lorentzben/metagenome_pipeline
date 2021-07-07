@@ -219,7 +219,7 @@ process FindUnmappedReads{
     import pandas as pd
 
     samples = pd.read_csv("${mapping}",sep='\t')
-    subprocess.run([mkdir sams], shell=True)
+    subprocess.run(['mkdir sams'], shell=True)
 
 
     for index, row in samples.iterrows():
