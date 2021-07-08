@@ -194,7 +194,7 @@ process RoundOneAssemble{
         stub = row['sequence-id']
     
         megahit_command = "megahit -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz --presets meta-large -o first_contigs/"+stub+"_assembly"
-        subprocess.run(['megahit_command'],shell=True)
+        subprocess.run([megahit_command],shell=True)
     """
 }
 
@@ -226,7 +226,7 @@ process FindUnmappedReads{
         stub = row['sequence-id']
 
         build_index = "bowtie2-build first_contigs/"+stub+"_assembly/final.contigs.fa final.contigs"
-        subprocess.run(['build_index'], shell=True)
+        subprocess.run([build_index], shell=True)
 
         map_reads = "bowtie2 -x final.contigs -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz -S sams/"+stub+".sam" 
     """
@@ -262,17 +262,17 @@ process PullUnmappedOut{
 
         #convert sam to bam 
         sam_conv = 'samtools view -bS sams/'+stub+'.sam > '+stub+'.bam'
-        subprocess.run(['sam_conv'], shell=True)
+        subprocess.run([sam_conv], shell=True)
 
         #filter the unmapped reads
         filter_command = 'samtools view -b -f 256 -F 12 '+stub+'.bam > '+stub+'_bothUnmapped.bam'
-        subprocess.run(['filter_command'],shell=True)
+        subprocess.run([filter_command],shell=True)
 
         #split reads into fastq files
         sort_command = 'samtools sort -n -m 5G -@ 2 '+stub+'_bothUnmapped.bam -o '+stub+'_sorted.bam'
-        subprocess.run(['sort_command'], shell=True)
+        subprocess.run([sort_command], shell=True)
         split_command = 'samtools fastq -@ 8 '+stub+'_sorted.bam -1 no_host/'+stub+'_R1.fastq.gz -2 no_host/'+stub+'_R2.fastq.gz -0 /dev/null -s /dev/null -n'
-        subprocess.run(['split_command'],shell=True)
+        subprocess.run([split_command],shell=True)
     """
 }
 
@@ -303,6 +303,6 @@ process RoundTwoAssembly{
         stub = row['sequence-id']
     
         megahit_command = "megahit -1 round_two_reads/"+stub+"_R1.fastq.gz -2 round_two_reads/"+stub+"_R2.fastq.gz --presets meta-large -o second_contigs/"+stub+"_assembly"
-        subprocess.run(['megahit_command'],shell=True)
+        subprocess.run([megahit_command],shell=True)
     """
 }
