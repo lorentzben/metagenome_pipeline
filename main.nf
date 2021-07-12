@@ -229,6 +229,7 @@ process FindUnmappedReads{
         subprocess.run([build_index], shell=True)
 
         map_reads = "bowtie2 -x final.contigs -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz -S sams/"+stub+".sam" 
+        subprocess.run([map_reads], shell=True)
     """
 }
 
