@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo}
 }
 
 Channel
@@ -180,6 +180,7 @@ process RoundOneAssemble{
     path "first_contigs" into ch_first_contigs
     path "first_contigs" into ch_remapping
     path "first_contigs" into ch_remapping_pull
+    path "first_contigs" into ch_first_assembly
      
     script:
     """
@@ -290,6 +291,7 @@ process RoundTwoAssembly{
     
     output:
     path "second_contigs" into ch_second_contigs
+    path "second_contigs" into ch_second_contigs_screen
     
     
     script:
@@ -306,5 +308,44 @@ process RoundTwoAssembly{
     
         megahit_command = "megahit -1 round_two_reads/"+stub+"_R1.fastq.gz -2 round_two_reads/"+stub+"_R2.fastq.gz --presets meta-large -o second_contigs/"+stub+"_assembly"
         subprocess.run([megahit_command],shell=True)
+    """
+}
+
+process ScreenAndCombine{
+
+    publishDir "${params.outdir}", mode: 'copy'
+
+    container "docker://lorentzb/bioawk"
+
+    input:
+    file mapping from ch_mapping_file_screen_and_combo
+    path "first_contigs" from ch_first_assembly
+    path "second_contigs" from ch_second_contigs_screen
+    
+    output:
+    path "final_contigs" into ch_final_contigs
+    
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv('${mapping}',sep='\t')
+    subprocess.run(['mkdir final_contigs'], shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        first_screen_command = "bioawk -c fastx '{ if(length($seq)>499) {print '>' $name; print $seq}}' first_contigs/"+stub+"_assembly/final.contigs.fa > "+stub+"_first.fasta"
+        subprocess.run([first_screen_command],shell=True)
+
+        second_screen_command = ""
+        subprocess.run([second_screen_command],shell=True)
+
+        combine_command = ""
+        subprocess.run([combine_command],shell=True)
+        
+
     """
 }
