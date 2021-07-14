@@ -343,7 +343,7 @@ process ScreenAndCombine{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        screen_and_comb_command = "echo" +stub+" | bash screen_and_combine.sh"
+        screen_and_comb_command = "echo " +stub+" | bash screen_and_combine.sh"
         subprocess.run([screen_and_comb_command],shell=True)
         
 
