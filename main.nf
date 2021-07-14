@@ -38,6 +38,11 @@ Channel
     .ifEmpty{ exit 1, log.info "Cannot find ref database, please collect"}
     .set{ ch_chicken_ref }
 
+Channel 
+    .fromPath("${baseDir}/screen_and_combine.sh")
+    .ifEmpty{ exit 1, log.info "Cannot find screen and combine script" }
+    .set{ ch_screening_script }
+
 //show help message 
 if (params.help){
     helpMessage()
@@ -321,6 +326,7 @@ process ScreenAndCombine{
     file mapping from ch_mapping_file_screen_and_combo
     path "first_contigs" from ch_first_assembly
     path "second_contigs" from ch_second_contigs_screen
+    file "screen_and_combine.sh" from ch_screening_script
     
     output:
     path "final_contigs" into ch_final_contigs
@@ -337,14 +343,8 @@ process ScreenAndCombine{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        first_screen_command = "bioawk -c fastx '{ if(length($seq)>499) {print '>' $name; print $seq}}' first_contigs/"+stub+"_assembly/final.contigs.fa > "+stub+"_first.fasta"
-        subprocess.run([first_screen_command],shell=True)
-
-        second_screen_command = ""
-        subprocess.run([second_screen_command],shell=True)
-
-        combine_command = ""
-        subprocess.run([combine_command],shell=True)
+        screen_and_comb_command = stub+" | bash screen_and_combine.sh"
+        subprocess.run([screen_and_comb_command],shell=True)
         
 
     """
