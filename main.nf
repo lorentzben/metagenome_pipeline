@@ -329,7 +329,7 @@ process ScreenAndCombine{
     file "screen_and_combine.sh" from ch_screening_script
     
     output:
-    path "final_contigs" into ch_final_contigs
+    path "final_contigs" into ch_final_contigs_eval
     
     script:
     """
@@ -348,4 +348,33 @@ process ScreenAndCombine{
         
 
     """
+}
+
+process EvaluateAssembiles{
+
+    publishDir "${params.outdir}", mode: 'copy'
+
+    container "docker://lorentzb/assembly_stats"
+
+    input:
+    path "final_contigs" from ch_final_contigs_eval
+    
+    output:
+    file "final_contigs_consolidated.csv" into ch_contig_stats
+    
+    
+    shell:
+    '''
+    #!/usr/bin/env bash
+    cd final_contigs
+    
+    for i in *.fasta; do
+        python3 /opt/fasta_metadata_parser-0.0.16/fasta_meta_data_parser.py "$i"
+    done
+
+    cd ..
+
+    python3 /opt/fasta_metadata_parser-0.0.16/consolidate_assembly_records.py final_contigs
+
+    '''
 }
