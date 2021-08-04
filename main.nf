@@ -412,7 +412,7 @@ process FindORF{
 }
 
 process ScreenORFover100{
-    publishDir "${params.outdir}/prodigal", mode: 'copy'
+    publishDir "${params.outdir}", mode: 'copy'
 
     container "docker://lorentzb/bioawk"
 
@@ -436,8 +436,8 @@ process ScreenORFover100{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        screen_and_comb_command = "echo " +stub+" | bash screen_orf_over_100.sh"
-        subprocess.run([screen_and_comb_command],shell=True
+        screen_and_comb_command ="echo "+stub+" | bash screen_orf_over_100.sh"
+        subprocess.run([screen_and_comb_command],shell=True)
     """
 
 
