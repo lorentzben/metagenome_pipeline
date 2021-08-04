@@ -406,7 +406,7 @@ process FindORF{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        prod_command = "prodigal.linux -i final_contigs/"+stub+"_final.fasta -o prodigal_inital/"+stub+".gbk -a prodigal_initial/"+stub+".faa -d prodigal_inital/"+stub+".fna -p meta"
+        prod_command = "prodigal.linux -i final_contigs/"+stub+"_final.fasta -a prodigal_initial/"+stub+".faa -o prodigal_inital/"+stub+".gbk  -d prodigal_inital/"+stub+".fna -p meta"
         subprocess.run([prod_command], shell=True)
     """
 
