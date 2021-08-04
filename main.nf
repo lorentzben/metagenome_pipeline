@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf}
 }
 
 Channel
@@ -437,9 +437,7 @@ process ScreenORFover100{
         stub = row['sequence-id']
 
         screen_and_comb_command = "echo " +stub+" | bash screen_orf_over_100.sh"
-        subprocess.run([screen_and_comb_command],shell=True)
-        
-
+        subprocess.run([screen_and_comb_command],shell=True
     """
 
 
