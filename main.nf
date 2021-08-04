@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf}
 }
 
 Channel
@@ -330,6 +330,7 @@ process ScreenAndCombine{
     
     output:
     path "final_contigs" into ch_final_contigs_eval
+    path "final_contigs" into ch_final_contigs_orfs
     
     script:
     """
@@ -377,4 +378,36 @@ process EvaluateAssembiles{
     python3 /opt/fasta_metadata_parser-0.0.16/consolidate_assembly_records.py final_contigs
 
     '''
+}
+
+process FindORF{
+
+    publishDir "${params.outdir}/prodigal", mode: 'copy'
+
+    container "docker://lorentzb/prodigal"
+
+    input:
+    file mapping from ch_mapping_file_find_orf
+    path "final_contigs" from ch_final_contigs_orfs
+    
+    output:
+    path "prodigal_inital" into ch_inital_orfs
+    
+    
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv('${mapping}',sep='\t')
+    subprocess.run(['mkdir prodigal_inital'], shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        prod_command = "prodigal.linux -i final_contigs/"+stub+"_final.fasta -o prodigal_inital/"+stub+".gbk -a prodigal_initial/"+stub+".faa -d prodigal_inital/"+stub+".fna -p meta"
+        subprocess.run([prod_command], shell=True)
+    """
+
 }
