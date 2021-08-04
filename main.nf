@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf; ch_mapping_file_cluster}
 }
 
 Channel
@@ -47,7 +47,7 @@ Channel
     .fromPath("${baseDir}/screen_orf_over_100.sh")
     .ifEmpty{ exit 1, log.info "Cannot find orf screen script"}
     .set { ch_orf_screen_script }
-    
+
 //show help message 
 if (params.help){
     helpMessage()
@@ -446,5 +446,36 @@ process ScreenORFover100{
         subprocess.run([screen_and_comb_command],shell=True)
     """
 
+
+}
+
+process RunCdHit{
+    publishDir "${params.outdir}", mode: 'copy'
+
+    container "docker://lorentzb/cdhit"
+
+    input:
+    file mapping from ch_mapping_file_cluster
+    path "orf_over_100" from ch_orfs_over_100
+    
+    
+    output:
+    path "clustered_orf" into ch_clustered_orf
+    
+    
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv('${mapping}',sep='\t')
+    subprocess.run(['mkdir clustered_orf'], shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        cdhit_command = "cd-hit -i orf_over_100/"+stub+"_over_100.fasta -o clustered_orf/"+stub+" -c 0.95 -G 0 -aS 0.9 -g 1 -d 0 -T 8 -M 0"
+        subprocess.run([cdhit_command],shell=True)
 
 }
