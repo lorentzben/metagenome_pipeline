@@ -409,5 +409,38 @@ process FindORF{
         prod_command = "prodigal.linux -i final_contigs/"+stub+"_final.fasta -o prodigal_inital/"+stub+".gbk  -d prodigal_inital/"+stub+".fna -p meta"
         subprocess.run([prod_command], shell=True)
     """
+}
+
+process ScreenORFover100{
+    publishDir "${params.outdir}/prodigal", mode: 'copy'
+
+    container "docker://lorentzb/bioawk"
+
+    input:
+    file mapping from ch_mapping_file_screen_orf
+    path "prodigal_inital" from ch_inital_orfs
+    
+    output:
+    path "orf_over_100" into ch_orfs_over_100
+    
+    
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv('${mapping}',sep='\t')
+    subprocess.run(['mkdir orf_over_100'], shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        screen_and_comb_command = "echo " +stub+" | bash screen_orf_over_100.sh"
+        subprocess.run([screen_and_comb_command],shell=True)
+        
+
+    """
+
 
 }
