@@ -477,5 +477,5 @@ process RunCdHit{
 
         cdhit_command = "cd-hit -i orf_over_100/"+stub+"_over_100.fasta -o clustered_orf/"+stub+" -c 0.95 -G 0 -aS 0.9 -g 1 -d 0 -T 8 -M 0"
         subprocess.run([cdhit_command],shell=True)
-
+    """
 }
