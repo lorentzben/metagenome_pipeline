@@ -43,6 +43,11 @@ Channel
     .ifEmpty{ exit 1, log.info "Cannot find screen and combine script" }
     .set{ ch_screening_script }
 
+Channel
+    .fromPath("${baseDir}/screen_orf_over_100.sh")
+    .ifEmpty{ exit 1, log.info "Cannot find orf screen script"}
+    .set { ch_orf_screen_script }
+    
 //show help message 
 if (params.help){
     helpMessage()
@@ -419,6 +424,7 @@ process ScreenORFover100{
     input:
     file mapping from ch_mapping_file_screen_orf
     path "prodigal_inital" from ch_inital_orfs
+    file "screen_orf_over_100.sh" from ch_orf_screen_script
     
     output:
     path "orf_over_100" into ch_orfs_over_100
