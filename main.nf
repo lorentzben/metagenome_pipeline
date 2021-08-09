@@ -491,7 +491,7 @@ process IndexAndAlignGeneLib{
     
     file mapping from ch_mapping_gene_lib
     path "no_host" from ch_no_host_gene_lib
-    path "clustered_orf" into ch_clustered_orf
+    path "clustered_orf" from ch_clustered_orf
     
     output:
     path "sams" into ch_sams_from_gene_lib
