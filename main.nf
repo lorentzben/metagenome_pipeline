@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf; ch_mapping_file_cluster}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf; ch_mapping_file_cluster; ch_mapping_gene_lib; ch_mapping_supported_genes ; ch_mapping_derep_gene_lib}
 }
 
 Channel
@@ -148,6 +148,8 @@ process ConvertSamtoBamandModify{
     output:
     path "no_host" into ch_no_host_seqs
     path "no_host" into ch_no_host_mapping
+    path "no_host" into ch_no_host_gene_lib
+    path "no_host" into ch_no_host_supported_genes
 
     script:
     """
@@ -477,5 +479,146 @@ process RunCdHit{
 
         cdhit_command = "cd-hit -i orf_over_100/"+stub+"_over_100.fasta -o clustered_orf/"+stub+" -c 0.95 -G 0 -aS 0.9 -g 1 -d 0 -T 8 -M 0"
         subprocess.run([cdhit_command],shell=True)
+    """
+}
+
+process IndexAndAlignGeneLib{
+    publishDir "${params.outdir}", mode: 'copy'
+
+    container "docker://lorentzb/bowtie"
+
+    input:
+    
+    file mapping from ch_mapping_gene_lib
+    path "no_host" from ch_no_host_gene_lib
+    path "clustered_orf" into ch_clustered_orf
+    
+    output:
+    path "sams" into ch_sams_from_gene_lib
+     
+
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
+    subprocess.run(['mkdir sams'], shell=True)
+
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        build_index = "bowtie2-build clustered_orf/"+stub+" "+stub+"
+        subprocess.run([build_index], shell=True)
+
+        map_reads = "bowtie2 -x "+stub+" -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz -S sams/"+stub+".sam" 
+        subprocess.run([map_reads], shell=True)
+    """
+}
+
+process ConvertSamsToBams{
+
+    publishDir "${params.outdir}/gene_lib", mode: 'copy'
+
+    container "docker://lorentzb/samtools"
+
+    input:
+    
+    file mapping from ch_mapping_supported_genes
+    path "sams" from ch_sams_from_gene_lib
+    
+    output:
+    path "bams" into ch_bams_from_gene_lib
+
+    script:
+    """
+    #!/usr/bin/env python3
+    
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
+    
+    subprocess.run(['mkdir bams'],shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        #convert sam to bam 
+        sam_conv = 'samtools view -bS sams/'+stub+'.sam > bams/'+stub+'.bam'
+        subprocess.run([sam_conv], shell=True)
+    """
+}
+
+process FilterSupportedGenes{
+    publishDir "${params.outdir}/gene_lib", mode: 'copy'
+
+    container "docker://lorentzb/sambamba"
+
+    input:
+    
+    file mapping from ch_mapping_derep_gene_lib
+    path "bams" from ch_bams_from_gene_lib
+    
+    output:
+    path "derepped_bams" into ch_bams_dereplicated
+
+    script:
+    """
+    #!/usr/bin/env python3
+    
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
+    
+    subprocess.run(['mkdir derepped_bams'],shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        #convert sam to bam 
+        sam_conv = 'sambamba view -h -t 2 -f bam -F \"[XS] != null and not unmapped and duplicate\" bams/'+stub+'.bam > deprepped_bams/'+stub+'.bam'
+        subprocess.run([sam_conv], shell=True)
+    """
+
+}
+
+process ConvertBamsToFasta{ 
+    publishDir "${params.outdir}/gene_lib", mode: 'copy'
+
+    container "docker://lorentzb/samtools"
+
+    input:
+    
+    file mapping from ch_mapping_gene_bam_to_fasta
+    path "derepped_bams" from ch_bams_dereplicated
+    
+    output:
+    path "geneLibrary" into ch_gene_library
+
+    script:
+
+    """
+    #!/usr/bin/env python3
+    
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
+    
+    subprocess.run(['mkdir geneLibrary'],shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        #split reads into fasta files
+        sort_command = 'samtools sort -n -m 5G -@ 2 derepped_bams/'+stub+'.bam -o '+stub+'_sorted.bam'
+        subprocess.run([sort_command], shell=True)
+
+        split_command = 'samtools fasta -@ 8 '+stub+'_sorted.bam > geneLibrary/'+stub+'_library.fasta'
+        subprocess.run([split_command],shell=True)
     """
 }
