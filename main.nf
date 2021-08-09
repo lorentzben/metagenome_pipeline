@@ -510,7 +510,7 @@ process IndexAndAlignGeneLib{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        build_index = "bowtie2-build clustered_orf/"+stub+" "+stub+"
+        build_index = 'bowtie2-build clustered_orf/'+stub+' '+stub
         subprocess.run([build_index], shell=True)
 
         map_reads = "bowtie2 -x "+stub+" -1 no_host/"+stub+"_R1.fastq.gz -2 no_host/"+stub+"_R2.fastq.gz -S sams/"+stub+".sam" 
