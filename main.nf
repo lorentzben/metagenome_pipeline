@@ -580,7 +580,7 @@ process FilterSupportedGenes{
         stub = row['sequence-id']
 
         #convert sam to bam 
-        sam_conv = 'sambamba view -h -t 2 -f bam -F \"[XS] != null and not unmapped and duplicate\" bams/'+stub+'.bam > deprepped_bams/'+stub+'.bam'
+        sam_conv = 'sambamba view -h -t 2 -f bam -F \"[XS] != null and not unmapped and duplicate\" bams/'+stub+'.bam > derepped_bams/'+stub+'.bam'
         subprocess.run([sam_conv], shell=True)
     """
 
