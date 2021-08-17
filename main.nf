@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf; ch_mapping_file_cluster; ch_mapping_gene_lib; ch_mapping_supported_genes ; ch_mapping_derep_gene_lib ; ch_mapping_gene_bam_to_fasta}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf; ch_mapping_file_cluster; ch_mapping_gene_lib; ch_mapping_supported_genes ; ch_mapping_derep_gene_lib ; ch_mapping_gene_bam_to_fasta; ch_mapping_file_rename}
 }
 
 Channel
@@ -47,6 +47,11 @@ Channel
     .fromPath("${baseDir}/screen_orf_over_100.sh")
     .ifEmpty{ exit 1, log.info "Cannot find orf screen script"}
     .set { ch_orf_screen_script }
+
+Channel
+    .fromPath("${baseDir}/rename_post_orf.py")
+    .ifEmpty{ exit 1, log.info "Cannot find rename script"}
+    .set{ ch_rename_script }
 
 //show help message 
 if (params.help){
@@ -418,6 +423,40 @@ process FindORF{
     """
 }
 
+process RenameORFHeaders{
+
+     publishDir "${params.outdir}/renamedFasta", mode: 'copy'
+
+    container "docker://lorentzb/rename"
+
+    input:
+    file mapping from ch_mapping_file_rename
+    path "prodigal_inital" from ch_inital_orfs
+    file "rename_post_orf.py" from ch_rename_script
+    
+    output:
+    path "prodigal_renamed" into ch_inital_orfs_renamed
+    
+    
+    
+    script:
+    """
+    #!/usr/bin/env python3
+    import subprocess
+    import pandas as pd
+
+    samples = pd.read_csv('${mapping}',sep='\t')
+    subprocess.run(['mkdir prodigal_renamed'], shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        command = "python3 rename_post_orf.py -i prodigal_inital/"+stub+".fna -o prodigal_renamed/"+stub+"_renamed.fna"
+        subprocess.run([command], shell=True)
+    """
+
+}
+
 process ScreenORFover100{
     publishDir "${params.outdir}", mode: 'copy'
 
@@ -425,7 +464,7 @@ process ScreenORFover100{
 
     input:
     file mapping from ch_mapping_file_screen_orf
-    path "prodigal_inital" from ch_inital_orfs
+    path "prodigal_renamed" from ch_inital_orfs_renamed
     file "screen_orf_over_100.sh" from ch_orf_screen_script
     
     output:
