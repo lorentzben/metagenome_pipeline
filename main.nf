@@ -35,7 +35,7 @@ if(params.mapping){
 
 Channel
     .fromPath("${baseDir}/Gallus_gallus")
-    .ifEmpty{ exit 1, log.info "Cannot find ref database, please collect"}
+    .ifEmpty{ exit 1, log.info "Cannot find ref database, please collect: https://support.illumina.com/sequencing/sequencing_software/igenome.html"}
     .set{ ch_chicken_ref }
 
 Channel 
@@ -619,7 +619,7 @@ process FilterSupportedGenes{
         stub = row['sequence-id']
 
         #convert sam to bam 
-        sam_conv = 'sambamba view -h -t 2 -f bam -F \"[XS] != null and not unmapped and duplicate\" bams/'+stub+'.bam > derepped_bams/'+stub+'.bam'
+        sam_conv = 'sambamba view -h -t 2 -f bam -F \"duplicate\" bams/'+stub+'.bam > derepped_bams/'+stub+'.bam'
         subprocess.run([sam_conv], shell=True)
     """
 
