@@ -594,7 +594,7 @@ process ConvertSamsToBams{
 process FilterSupportedGenes{
     publishDir "${params.outdir}/gene_lib", mode: 'copy'
 
-    container "docker://lorentzb/sambamba"
+    container "docker://lorentzb/samtools"
 
     input:
     
