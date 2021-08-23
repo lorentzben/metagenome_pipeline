@@ -618,9 +618,25 @@ process FilterSupportedGenes{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        #convert sam to bam 
-        sam_conv = 'sambamba view -h -t 2 -f bam -F \"duplicate\" bams/'+stub+'.bam > derepped_bams/'+stub+'.bam'
-        subprocess.run([sam_conv], shell=True)
+        #steps to sort and mark duplicate alignments
+
+        collate_command = "samtools collate -o " +stub+"_collate.bam bams/"+stub+".bam"
+        subprocess.run([collate_command], shell=True)
+
+        fixmate_command = "samtools fixmate -m "+stub+"_collate.bam " +stub+"_fixmate.bam"
+        subprocess.run([fixmate_command], shell=True)
+
+        sort_command = "samtools sort -o " +stub+ "_positionsort.bam " +stub+"_fixmate.bam"
+        subprocess.run([sort_command], shell=True)
+
+        markdup_command = "samtools markdup -s "+stub+"_positionsort.bam " +stub+"_markdup.bam"
+        subprocess.run([markdup_command], shell=True)
+
+        #pull duplicate alignments (supported evidence) into separate bam file
+
+        separate_alignments_command = "samtools view -F 0X400 -b "+stub+"_markdup.bam > derepped_bams/" +stub+"_only_dups.bam"
+
+               
     """
 
 }
@@ -654,7 +670,7 @@ process ConvertBamsToFasta{
         stub = row['sequence-id']
 
         #split reads into fasta files
-        sort_command = 'samtools sort -n -m 5G -@ 2 derepped_bams/'+stub+'.bam -o '+stub+'_sorted.bam'
+        sort_command = 'samtools sort -n -m 5G -@ 2 derepped_bams/'+stub+'_only_dups.bam -o '+stub+'_sorted.bam'
         subprocess.run([sort_command], shell=True)
 
         split_command = 'samtools fasta -@ 8 '+stub+'_sorted.bam > geneLibrary/'+stub+'_library.fasta'
