@@ -654,9 +654,9 @@ process ConvertBamsToFasta{
     output:
     path "geneLibrary" into ch_gene_library
 
-    shell:
+    script:
 
-    '''
+    """
     #!/usr/bin/env python3
     
     import subprocess
@@ -678,5 +678,5 @@ process ConvertBamsToFasta{
 
         de_duplicate_fasta = "awk \'BEGIN {i = 1;} { if ($1 ~ /^>/) { tmp = h[i]; h[i] = $1; } else if (!a[$1]) { s[i] = $1; a[$1] = \"1\"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }\' <"+stub+"_library.fasta> geneLibrary/"+stub+"_final_library.fasta"
         subprocess.run([de_duplicate_fasta],shell=True)
-    '''
+    """
 }
