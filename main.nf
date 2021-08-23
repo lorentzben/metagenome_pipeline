@@ -662,7 +662,7 @@ process ConvertBamsToFasta{
     import subprocess
     import pandas as pd
 
-    samples = pd.read_csv("!{mapping}",sep='\t')
+    samples = pd.read_csv("${mapping}",sep='\t')
     
     subprocess.run(['mkdir geneLibrary'],shell=True)
 
@@ -676,7 +676,7 @@ process ConvertBamsToFasta{
         split_command = 'samtools fasta -@ 8 '+stub+'_sorted.bam > '+stub+'_library.fasta'
         subprocess.run([split_command],shell=True)
 
-        de_duplicate_fasta = "awk \'BEGIN {i = 1;} { if ($1 ~ /^>/) { tmp = h[i]; h[i] = $1; } else if (!a[$1]) { s[i] = $1; a[$1] = \"1\"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }\' <"+stub+"_library.fasta> geneLibrary/"+stub+"_final_library.fasta"
+        de_duplicate_fasta = "awk \'BEGIN {i = 1;} { if (\$1 ~ /^>/) { tmp = h[i]; h[i] = \$1; } else if (!a[\$1]) { s[i] = \$1; a[\$1] = \"1\"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }\' <"+stub+"_library.fasta> geneLibrary/"+stub+"_final_library.fasta"
         subprocess.run([de_duplicate_fasta],shell=True)
     """
 }
