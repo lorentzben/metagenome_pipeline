@@ -53,6 +53,11 @@ Channel
     .ifEmpty{ exit 1, log.info "Cannot find rename script"}
     .set{ ch_rename_script }
 
+Channel
+    .fromPath("${baseDir}/de_duplicate.sh")
+    .ifEmpty{ exit 1, log.info "Cannot find script "}
+    .set{ ch_de_dup_script }
+
 //show help message 
 if (params.help){
     helpMessage()
@@ -650,6 +655,7 @@ process ConvertBamsToFasta{
     
     file mapping from ch_mapping_gene_bam_to_fasta
     path "derepped_bams" from ch_bams_dereplicated
+    file "de_duplicate.sh" from ch_de_dup_script
     
     output:
     path "geneLibrary" into ch_gene_library
@@ -676,7 +682,7 @@ process ConvertBamsToFasta{
         split_command = 'samtools fasta -@ 8 '+stub+'_sorted.bam > '+stub+'_library.fasta'
         subprocess.run([split_command],shell=True)
 
-        de_duplicate_fasta = "awk \'BEGIN {i = 1;} { if (\$1 ~ /^>/) { tmp = h[i]; h[i] = \$1; } else if (!a[\$1]) { s[i] = \$1; a[\$1] = \"1\"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }\' <"+stub+"_library.fasta> geneLibrary/"+stub+"_final_library.fasta"
+        de_duplicate_fasta = 'echo '+stub+' | bash de_duplicate.sh'
         subprocess.run([de_duplicate_fasta],shell=True)
     """
 }
