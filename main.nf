@@ -635,7 +635,7 @@ process FilterSupportedGenes{
         #pull duplicate alignments (supported evidence) into separate bam file
 
         separate_alignments_command = "samtools view -F 0X400 -b "+stub+"_markdup.bam > derepped_bams/" +stub+"_only_dups.bam"
-
+        subprocess.run([separate_alignments_command], shell=True)
                
     """
 
@@ -673,7 +673,10 @@ process ConvertBamsToFasta{
         sort_command = 'samtools sort -n -m 5G -@ 2 derepped_bams/'+stub+'_only_dups.bam -o '+stub+'_sorted.bam'
         subprocess.run([sort_command], shell=True)
 
-        split_command = 'samtools fasta -@ 8 '+stub+'_sorted.bam > geneLibrary/'+stub+'_library.fasta'
+        split_command = 'samtools fasta -@ 8 '+stub+'_sorted.bam > '+stub+'_library.fasta'
         subprocess.run([split_command],shell=True)
+
+        de_duplicate_fasta = 'awk \'BEGIN {i = 1;} { if ($1 ~ /^>/) { tmp = h[i]; h[i] = $1; } else if (!a[$1]) { s[i] = $1; a[$1] = \"1\"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }\' <'+stub+'_library.fasta> geneLibrary/'+stub+'_final_library.fasta'
+        subprocess.run([de_duplicate_fasta],shell=True)
     """
 }
