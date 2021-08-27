@@ -709,6 +709,8 @@ process IntegrityandGeneLibStats{
     
     import subprocess
     import pandas as pd
+
+    samples = pd.read_csv("${mapping}",sep='\t')
     subprocess.run(['mkdir stats'],shell=True)
 
     for index, row in samples.iterrows():
