@@ -716,7 +716,7 @@ process IntegrityandGeneLibStats{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        gtool_command = "python3 gtool.py -sg geneLibrary/"+stub+".fasta > "+stub+".log"
+        gtool_command = "python3 /opt/gtool.py -sg geneLibrary/"+stub+".fasta > "+stub+".log"
         subprocess.run([gtool_command],shell=True)
 
     """
