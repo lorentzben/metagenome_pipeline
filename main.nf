@@ -686,3 +686,36 @@ process ConvertBamsToFasta{
         subprocess.run([de_duplicate_fasta],shell=True)
     """
 }
+
+process IntegrityandGeneLibStats{
+
+    publishDir "${params.outdir}/gene_lib_stat", mode: 'copy'
+
+    container "docker://lorentzb/integstat"
+
+    input:
+    
+    file mapping from ch_mapping_gene_bam_to_fasta
+    path "geneLibrary" from ch_gene_library
+    
+    
+    output:
+    path "stats" into ch_gene_library_stat
+
+    script:
+
+    """
+    #!/usr/bin/env python3
+    
+    import subprocess
+    import pandas as pd
+    subprocess.run(['mkdir stats'],shell=True)
+
+    for index, row in samples.iterrows():
+        stub = row['sequence-id']
+
+        gtool_command = "python3 gtool.py -sg geneLibrary/"+stub+".fasta > "+stub+".log"
+        subprocess.run([gtool_command],shell=True)
+
+    """
+}
