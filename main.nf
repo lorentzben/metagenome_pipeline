@@ -30,7 +30,7 @@ if(params.mapping){
     Channel
         .fromPath(params.mapping)
         .ifEmpty {exit 1, log.info "Cannot find path file ${mapping}"}
-        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf; ch_mapping_file_cluster; ch_mapping_gene_lib; ch_mapping_supported_genes ; ch_mapping_derep_gene_lib ; ch_mapping_gene_bam_to_fasta; ch_mapping_file_rename}
+        .into{ ch_mapping_file ; ch_mapping_file_sam ; ch_mapping_file_assembly ; ch_mapping_coverage ; ch_mapping_remapping ; ch_mapping_file_assembly_two ; ch_mapping_file_screen_and_combo; ch_mapping_file_find_orf ; ch_mapping_file_screen_orf; ch_mapping_file_cluster; ch_mapping_gene_lib; ch_mapping_supported_genes ; ch_mapping_derep_gene_lib ; ch_mapping_gene_bam_to_fasta; ch_mapping_file_rename; ch_mapping_lib_stat}
 }
 
 Channel
@@ -695,7 +695,7 @@ process IntegrityandGeneLibStats{
 
     input:
     
-    file mapping from ch_mapping_gene_bam_to_fasta
+    file mapping from ch_mapping_lib_stat
     path "geneLibrary" from ch_gene_library
     
     
