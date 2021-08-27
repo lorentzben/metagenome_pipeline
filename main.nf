@@ -719,7 +719,7 @@ process IntegrityandGeneLibStats{
         gtool_command = "python3 /opt/gtool-0.1.2/gtool.py -sg geneLibrary/"+stub+".fasta > stats/"+stub+".log"
         subprocess.run([gtool_command],shell=True)
 
-        copy_csv = "cp *.csv stats/"
+        copy_csv = "cp geneLibrary/*.csv stats/"
         subprocess.run([copy_csv],shell=True)
 
     """
