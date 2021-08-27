@@ -716,8 +716,11 @@ process IntegrityandGeneLibStats{
     for index, row in samples.iterrows():
         stub = row['sequence-id']
 
-        gtool_command = "python3 /opt/gtool-0.1.0/gtool.py -sg geneLibrary/"+stub+".fasta > "+stub+".log"
+        gtool_command = "python3 /opt/gtool-0.1.0/gtool.py -sg geneLibrary/"+stub+".fasta > stats/"+stub+".log"
         subprocess.run([gtool_command],shell=True)
+
+        copy_csv = "cp *.csv stats/"
+        subprocess.run([copy_csv],shell=True)
 
     """
 }
