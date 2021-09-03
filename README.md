@@ -15,3 +15,12 @@ $ git clone https://github.com/lorentzben/metagenome_pipeline.git
 $ cd metagenome_pipeline
 $ nextflow run main.nf 
 ```
+
+## Setup diamond database
+```shell
+docker run lorentzb/diamond bash setup_diamond_db.sh
+
+singularity run docker://lorentzb/diamond bash setup_diamond_db.sh
+
+
+```
